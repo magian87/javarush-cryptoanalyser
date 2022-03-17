@@ -7,10 +7,10 @@ public class Main {
     private final static String NOT_TRUTH_NUMBER_MENU = "Не верный пункт меню, введите корректное число";
     private final static String NOT_TRUTH_NUMBER_CRYPT = "Не верное число криптографического ключа";
 
-    private final static String SOURCE_FILE = "c:/test/source.txt";
-    //private final static String SOURCE_FILE = "/home/bulat/test/source.txt";
-    private final static String DESTINATION_FILE = "c:/test/destination.txt";
-    //private final static String DESTINATION_FILE = "/home/bulat/test/destination.txt";
+    //private final static String SOURCE_FILE = "c:/test/source.txt";
+    private final static String SOURCE_FILE = "/home/bulat/test/source.txt";
+    //private final static String DESTINATION_FILE = "c:/test/destination.txt";
+    private final static String DESTINATION_FILE = "/home/bulat/test/destination.txt";
 
     public static void main(String[] args) {
 /*        String ss = ":9ъыч-";
