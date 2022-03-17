@@ -1,11 +1,10 @@
-package com.javarush.details;
+package com.javarush.cryptoanalyser;
 
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Crypto {
 

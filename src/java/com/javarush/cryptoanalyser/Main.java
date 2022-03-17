@@ -1,7 +1,6 @@
-package com.javarush.details;
+package com.javarush.cryptoanalyser;
 
 import java.util.Scanner;
-import java.util.regex.Pattern;
 
 public class Main {
     private final static String NOT_TRUTH_NUMBER_MENU = "Не верный пункт меню, введите корректное число";
