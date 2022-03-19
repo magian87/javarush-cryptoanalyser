@@ -1,18 +1,18 @@
 package com.javarush.cryptoanalyser;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Scanner;
 
 public class Main {
     private final static String NOT_TRUTH_NUMBER_MENU = "Не верный пункт меню, введите корректное число";
     private final static String NOT_TRUTH_NUMBER_CRYPT = "Не верное число криптографического ключа";
 
-    //private final static String SOURCE_FILE = "c:/test/source.txt";
-    private final static String SOURCE_FILE = "/home/bulat/test/source.txt";
-    //private final static String DESTINATION_FILE = "c:/test/destination.txt";
-    private final static String DESTINATION_FILE = "/home/bulat/test/destination.txt";
+
+
 
     public static void main(String[] args) {
-/*        String ss = ":9ъыч-";
+   /*     String ss = ",";
         //String ss = "aaa";
         System.out.println(ss.matches(".*[,-].*"));
         //System.out.println(ss.replaceAll("[.,!?:;«»]$",""));
@@ -20,16 +20,16 @@ public class Main {
 
         String str;
 
-        Crypto.setKey(5);
+        Crypto.setKey(15);
 
 
 
         Scanner scanner = new Scanner(System.in);
         int n = 0;
         do {
-           /* System.out.println("1 посмотреть пути к файлам для шифрования\\расшифровки\\криптографический ключ");
+            System.out.println("1 посмотреть пути к файлам для шифрования\\расшифровки\\криптографический ключ");
             System.out.println("2 Задать файл для шифрования");
-            System.out.println("3 Задать файл для расшифровки");*/
+            System.out.println("3 Задать файл для расшифровки");
             System.out.println("4 Задать криптографический ключ");
             System.out.println("5 Зашифровать по ключу");
             System.out.println("6 Расшифровать по ключу");
@@ -38,34 +38,46 @@ public class Main {
             System.out.println("0 Выход");
 
             System.out.print("Введите пункт меню: ");
-            str = scanner.nextLine();
+            //str = scanner.nextInt();
+            n = scanner.nextInt();
             System.out.println();
 
             try {
-                n = Integer.parseInt(str);
-                if (!(1 <= n || n <= 7)) {
+                //n = Integer.parseInt(str);
+                if (!(0 <= n || n <= 8)) {
                     System.out.println(NOT_TRUTH_NUMBER_MENU);
                 } else {
                     switch (n) {
+                        case 1:
+                            Crypto.showParams();
+                            break;
+                        case 2:
+                            Crypto.setSourceFileFromMenu();
+                            break;
+                        case 3:
+                            Crypto.setDestinationFileFromMenu();
+                            break;
+//                            break;
                         case 4:
+                            Crypto.setKeyFromMenu();
 
-                            try {
-                                Crypto.setKey(Integer.parseInt(scanner.nextLine()));
-                            } catch (NumberFormatException e) {
-                                throw new Crypto.NumberFormatExceptionCrypt();
-                            }
+//                            try {
+//                                Crypto.setKey(Integer.parseInt(scanner.nextLine()));
+//                            } catch (NumberFormatException e) {
+//                                throw new Crypto.NumberFormatExceptionCrypt();
+//                            }
 
                             break;
                         case 5:
                             System.out.println("Введите ключ шифрования: ");
-                            Crypto.cryptText(Crypto.getKey(), SOURCE_FILE, DESTINATION_FILE);
+                            Crypto.cryptText(Crypto.getKey(), Crypto.SOURCE_FILE, Crypto.DESTINATION_FILE);
                             break;
                         case 6:
-                            Crypto.cryptText(-Crypto.getKey(), DESTINATION_FILE, SOURCE_FILE);
+                            Crypto.cryptText(-Crypto.getKey(), Crypto.DESTINATION_FILE, Crypto.SOURCE_FILE);
                             break;
                         case 7:
-                            Crypto.BruteForce(DESTINATION_FILE);
-                            //Crypto.BruteForce(SOURCE_FILE);
+                            Crypto.BruteForce(Crypto.DESTINATION_FILE);
+                            //Crypto.BruteForce(Crypto.SOURCE_FILE);
                             break;
                     }
 
@@ -78,7 +90,7 @@ public class Main {
             }
 
 
-        } while (n != 8);
+        } while (n != 0);
     }
 
 }
