@@ -8,10 +8,10 @@ import java.util.*;
 
 public class Crypto {
 
-    public final static String SOURCE_FILE = "c:/test/source.txt";
-    //private final static String SOURCE_FILE = "/home/bulat/test/source.txt";
-    public final static String DESTINATION_FILE = "c:/test/destination.txt";
-    //private final static String DESTINATION_FILE = "/home/bulat/test/destination.txt";
+    //public final static String SOURCE_FILE = "c:/test/source.txt";
+    private final static String SOURCE_FILE = "/home/bulat/test/source.txt";
+    //public final static String DESTINATION_FILE = "c:/test/destination.txt";
+    private final static String DESTINATION_FILE = "/home/bulat/test/destination.txt";
 
     public static void setDestinationFile(String destinationFile) {
         Crypto.destinationFile = destinationFile;
@@ -38,6 +38,15 @@ public class Crypto {
     }
 
     private static int key;
+
+    public static String getSourceFile() {
+        return sourceFile;
+    }
+
+    public static String getDestinationFile() {
+        return destinationFile;
+    }
+
     private static String sourceFile = SOURCE_FILE;
     private static String destinationFile = DESTINATION_FILE;
 
@@ -46,6 +55,11 @@ public class Crypto {
             'г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у',
             'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'я', '.', ',', '«', '»',
             ':', '!', '?', ' ');
+
+    private static final char[] GLASN_BUKV = {'а', 'у', 'о', 'ы', 'э', 'я', 'ю', 'ё', 'и', 'е'};
+    private static final char[] SOGL_BUKV = {'б', 'в', 'г', 'д', 'ж','з','й','к','л','м','н','п','р','с','т','ф','х','ц','ч','ш','щ'};
+
+
 
     private static final List<Character> PUNCTUATION_MARK = Arrays.asList('.', ',', '?', ':', ';', '-');
 
@@ -57,7 +71,7 @@ public class Crypto {
         System.out.println("ПАРАМЕТРЫ");
         System.out.println("Файл для Шифрования: " + sourceFile);
         System.out.println("Файл для расшифровки: " + destinationFile);
-        System.out.println("Файл для криптографический ключ:" + getKey());
+        System.out.println("Криптографический ключ: " + getKey());
     }
 
     public static void setSourceFileFromMenu() {
@@ -76,30 +90,37 @@ public class Crypto {
     public static void setDestinationFileFromMenu() {
         //try
         Scanner scanner1 = new Scanner(System.in);//{
-        System.out.print("Введите файл для шифрования: ");
+        System.out.print("Введите файл для расшифровки: ");
         String filename = scanner1.nextLine();
         if (Files.notExists(Path.of(filename))) {
             System.out.println("Введен не существующий файл");
         } else {
-            Crypto.setDestinationFile (filename);
+            Crypto.setDestinationFile(filename);
         }
         //}
     }
 
     public static void setKeyFromMenu() {
-        //try
-        Scanner scanner1 = new Scanner(System.in);//{
+//        Почему в процедурах setSourceFileFromMenu, setDestinationFileFromMenu,setKeyFromMenu
+//        нельзя использовать try -with-resources, появляются ошибки, как будто закрывается
+//        основной Scanner из модуля Main. Вот StackTrace. Что делать и как исправить?
+//        Exception in thread "main" java.util.NoSuchElementException
+//        at java.base/java.util.Scanner.throwFor(Scanner.java:937)
+//        at java.base/java.util.Scanner.next(Scanner.java:1594)
+//        at java.base/java.util.Scanner.nextInt(Scanner.java:2258)
+//        at java.base/java.util.Scanner.nextInt(Scanner.java:2212)
+//        at com.javarush.cryptoanalyser.Main.main(Main.java:41)
+        //try (
+        Scanner scanner1 = new Scanner(System.in);//) {
         System.out.print("Введите криптографический ключ: ");
         int key = 0;
         try {
             key = scanner1.nextInt();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (InputMismatchException e) {
+            System.out.println("ОШИБКА: криптографический ключ должен быть числом");
         }
         Crypto.setKey(key);
-
         //}
-
     }
 
 
@@ -213,6 +234,40 @@ public class Crypto {
         //4. Подсчитать сумму повторяющихся слов, считаем слово если оно встретилось более 1 раза
         //   Хранить так: ключ, кол-во слов
         //5. Выбрать из Map по максимальному значению ключ, расшифровать текст. Записать в файл
+    }
+
+    public static void staticAnaliz() {
+        String filename = "/home/bulat/test/add.txt";
+        String line;
+        int cntGl = 0;
+        int cntSogl = 0;
+        try (BufferedReader bufferedReader = Files.newBufferedReader(Path.of(filename), Charset.defaultCharset())) {
+            //bufferedReader.mark(1);
+            while ((line = bufferedReader.readLine()) != null) {
+                char[] arr = line.toLowerCase().toCharArray();
+                for (int i = 0; i < arr.length; i++) {
+                    for (int k = 0; k < SOGL_BUKV.length ; k++) {
+                        if (arr[i] == SOGL_BUKV[k]) {
+                            cntSogl++;
+                            break;
+                        }
+                    }
+
+                    for (int j = 0; j < GLASN_BUKV.length; j++) {
+                        if (arr[i] == GLASN_BUKV[j]) {
+                            cntGl++;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            System.out.printf ("Количество гласных букв: %d, количество согласных букв: %d, соотношение гласных и согласных: %f \n", cntGl, cntSogl, (float) cntGl/cntSogl);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
 

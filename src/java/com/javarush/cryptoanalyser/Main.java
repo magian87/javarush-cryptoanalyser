@@ -2,6 +2,7 @@ package com.javarush.cryptoanalyser;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Main {
@@ -18,14 +19,13 @@ public class Main {
         //System.out.println(ss.replaceAll("[.,!?:;«»]$",""));
         System.exit(-1);*/
 
-        String str;
+        //String str;
 
         Crypto.setKey(15);
 
 
-
         Scanner scanner = new Scanner(System.in);
-        int n = 0;
+        int n =0;
         do {
             System.out.println("1 посмотреть пути к файлам для шифрования\\расшифровки\\криптографический ключ");
             System.out.println("2 Задать файл для шифрования");
@@ -35,16 +35,15 @@ public class Main {
             System.out.println("6 Расшифровать по ключу");
             System.out.println("7 Взлом (Brute Force)");
             System.out.println("8 Взлом (Статистический анализ)");
-            System.out.println("0 Выход");
+            System.out.println("9 Выход");
 
             System.out.print("Введите пункт меню: ");
-            //str = scanner.nextInt();
-            n = scanner.nextInt();
-            System.out.println();
-
             try {
-                //n = Integer.parseInt(str);
-                if (!(0 <= n || n <= 8)) {
+                String str = scanner.nextLine();
+                n = Integer.parseInt(str);
+                System.out.println();
+
+                if (!(1 <= n || n <= 9)) {
                     System.out.println(NOT_TRUTH_NUMBER_MENU);
                 } else {
                     switch (n) {
@@ -57,40 +56,30 @@ public class Main {
                         case 3:
                             Crypto.setDestinationFileFromMenu();
                             break;
-//                            break;
                         case 4:
                             Crypto.setKeyFromMenu();
-
-//                            try {
-//                                Crypto.setKey(Integer.parseInt(scanner.nextLine()));
-//                            } catch (NumberFormatException e) {
-//                                throw new Crypto.NumberFormatExceptionCrypt();
-//                            }
-
                             break;
                         case 5:
-                            System.out.println("Введите ключ шифрования: ");
-                            Crypto.cryptText(Crypto.getKey(), Crypto.SOURCE_FILE, Crypto.DESTINATION_FILE);
+                            Crypto.cryptText(Crypto.getKey(), Crypto.getSourceFile(), Crypto.getDestinationFile());
                             break;
                         case 6:
-                            Crypto.cryptText(-Crypto.getKey(), Crypto.DESTINATION_FILE, Crypto.SOURCE_FILE);
+                            Crypto.cryptText(-Crypto.getKey(), Crypto.getDestinationFile(), Crypto.getSourceFile() );
                             break;
                         case 7:
-                            Crypto.BruteForce(Crypto.DESTINATION_FILE);
-                            //Crypto.BruteForce(Crypto.SOURCE_FILE);
+                            Crypto.BruteForce(Crypto.getDestinationFile());
+                            break;
+                        case 8:
+                            Crypto.staticAnaliz();
                             break;
                     }
 
                 }
-            }  catch (Crypto.NumberFormatExceptionCrypt numberFormatExceptionCrypt) {
-                System.out.println(NOT_TRUTH_NUMBER_CRYPT);
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 System.out.println(NOT_TRUTH_NUMBER_MENU);
             }
 
 
-        } while (n != 0);
+        } while (n != 9);
     }
 
 }
