@@ -4,6 +4,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.SQLOutput;
 import java.util.*;
 
 public class Crypto {
@@ -20,16 +21,19 @@ public class Crypto {
     private static final char[] LOWEL_LETTERS = {'а', 'у', 'о', 'ы', 'э', 'я', 'ю', 'ё', 'и', 'е'};
     private static final char[] CONSONANT_LETTERS = {'б', 'в', 'г', 'д', 'ж', 'з', 'й', 'к', 'л', 'м', 'н', 'п', 'р', 'с', 'т', 'ф', 'х', 'ц', 'ч', 'ш', 'щ'};
 
+    //Ключ используемый для шифрования
     private static int key;
+    //Исходный файл, файл зашифрованный, доп. файл того же автора
     private static String sourceFile = SOURCE_FILE;
     private static String destinationFile = DESTINATION_FILE;
     private static String additionalFile = ADDITIONAL_FILE;
 
+
     public enum TypeFilesEnum {
         source, destination, addition
     }
-
-    public static final Map<String, String> typeFilesMap = new HashMap<>();
+    //Что бы не дублировать код, см. процедуру setFileFromMenu
+    private static final Map<String, String> typeFilesMap = new HashMap<>();
 
     static {
         typeFilesMap.put(TypeFilesEnum.source.toString() , "файл для шифрования");
@@ -84,6 +88,7 @@ public class Crypto {
         System.out.println("Криптографический ключ: " + getKey());
     }
 
+    //Задание файлов используемых файлов
     public static void setFileFromMenu(TypeFilesEnum typeFilesEnum) {
         //
         //        Почему нельзя использовать try -with-resources, появляются ошибки, как будто закрывается
@@ -114,7 +119,7 @@ public class Crypto {
         //}
 
     }
-
+    //задание криптографического ключа
     public static void setKeyFromMenu() {
         //try (
         Scanner scanner1 = new Scanner(System.in);//) {
@@ -125,18 +130,23 @@ public class Crypto {
         } catch (InputMismatchException e) {
             System.out.println("ОШИБКА: криптографический ключ должен быть числом");
         }
+        if (key <=0) {
+            System.out.println("Криптографический ключ должен быть больше 0");
+        } else if (key >= ALPHABET_LIST.size()) {
+            System.out.println("Криптографический ключ должен быть меньше либо равным количеству символов в алфамите: "+ ALPHABET_LIST.size());
+        }
+
         Crypto.setKey(key);
         //}
     }
 
-
+    //Процедура шифрования
     private static Character crypt(char ch, int key) throws InvalidKeyCrypt {
         int indexOf = ALPHABET_LIST.indexOf(ch);
         if (indexOf != -1) {
 
             //Если key>словаря обработать эту ситуациию
             int delta = (indexOf + key) % ALPHABET_LIST.size();
-//            int delta = (indexOf + key>ALPHABET_LIST.size()?key%ALPHABET_LIST.size():key) % ALPHABET_LIST.size();
             if (key == 0) {
                 throw new InvalidKeyCrypt();
             } else if (key < 0 && delta < 0) {
@@ -147,15 +157,17 @@ public class Crypto {
         return ch;
     }
 
+    //Процедура расшифровки строки
     private static String enCryptLine(String line, int key) throws InvalidKeyCrypt {
         char[] lineChar = line.toCharArray();
-        StringBuffer stringBuffer = new StringBuffer();
+        StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < lineChar.length; i++) {
-            stringBuffer.append(crypt(lineChar[i], -key));
+            stringBuilder.append(crypt(lineChar[i], -key));
         }
-        return stringBuffer.toString();
+        return stringBuilder.toString();
     }
 
+    //Процедура шифрования файла
     public static void cryptText(int p_key, String p_source_file, String p_distination_file) {
         if (Files.notExists(Path.of(p_source_file))) {
             System.out.println("Исходный файл не существует: " + p_source_file);
@@ -187,6 +199,7 @@ public class Crypto {
         }
     }
 
+
     public static void BruteForce(String p_filename) {
         if (Files.notExists(Path.of(p_filename))) {
             System.out.println("Передан не существующий файл для расшифровки: " + p_filename);
@@ -195,33 +208,23 @@ public class Crypto {
         String line;
         Set<String> wordSet = new HashSet<>();
         Map<Integer, Integer> mapKey = new HashMap<>();
-        // int j = 5;
         for (int i = 0, j = 1; i < ALPHABET_LIST.size(); i++, j++) {
-
-
             try (BufferedReader bufferedReader = Files.newBufferedReader(Path.of(p_filename), Charset.defaultCharset())) {
-                //bufferedReader.mark(1);
+                //bufferedReader.mark(0); //т.к. не получилось воспользоваться, просто закомментировал
                 while ((line = bufferedReader.readLine()) != null) {
-                    //String newLine = line.replaceAll("[,.!?:«»]", "").toLowerCase();
-                    String newLine2 = enCryptLine(line, j).toLowerCase(Locale.ROOT);
-
+                    String newLine2 = enCryptLine(line, j).toLowerCase();
                     String[] words = newLine2.split(" ");
-
-                    //wordSet.addAll(Arrays.asList(words));
                     for (String word : words) {
                         if (!word.matches(".*[.,-:?!].*")) { //Убираю из найденных слов те, в которых есть знаки препинания
+                                                                   //как доработать данную регулярку, что бы не отбрасывались слова заканчивающиеся на знак препинания?
                             wordSet.add(word);
                         }
 
                     }
-
                     //System.out.println(bufferedReader.markSupported());
-
                 }
-
+                //Записываю ключ и количество найденных слов без знааков препинания
                 mapKey.put(j, wordSet.size());
-                System.out.printf("Ключ: %d, количество уникальных слов %d \n", j, wordSet.size());
-
                 wordSet.clear();
                 //bufferedReader.reset();
                 //bufferedReader.mark(0);
@@ -244,18 +247,10 @@ public class Crypto {
         }
         System.out.printf("key=%d, cnt words = %d \n", map_Key, mapMaxValue);
 
-        Crypto.cryptText(-map_Key, DESTINATION_FILE, SOURCE_FILE);
-
-        //1. Удалить из слов все знаки препинания: ",.!?:«»"
-
-
-        //2. Разбить текст на слова (по пробелу)
-        //3. Привести текст к нижнему регистру
-        //4. Подсчитать сумму повторяющихся слов, считаем слово если оно встретилось более 1 раза
-        //   Хранить так: ключ, кол-во слов
-        //5. Выбрать из Map по максимальному значению ключ, расшифровать текст. Записать в файл
+        Crypto.cryptText(-map_Key, Crypto.getDestinationFile(), Crypto.getSourceFile());
     }
 
+    //Получение отношения кол-ва гласных букв к количеству согласных возведенных во 2 степень
     private static double relationshipLetter(String file, int offset) {
         if (Files.notExists(Path.of(file))) {
             System.out.println("Файл не существует " + file);
@@ -291,31 +286,17 @@ public class Crypto {
                 }
             }
             float t = (float) cntGl / cntSogl;
-            return t * t;
-            //return (float) cntGl / cntSogl;
-
-            //System.out.printf("Ключ %d, количество гласных букв: %d, количество согласных букв: %d, соотношение гласных и согласных: %f \n", m, cntGl, cntSogl, (float) cntGl / cntSogl);
+            return Math.pow(t,2);
         } catch (InvalidKeyCrypt invalidKeyCrypt) {
             invalidKeyCrypt.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return Float.MAX_VALUE;
+        return 0;
     }
 
     public static void staticAnaliz() {
-
-/*
-    1.Из не зашифрованного текста того же автора получить соотношение гласных и согласных букв
-    2.Получить квадрат этого отношения
-    3. отклонением назначить Float.Max
-    2.В цикле по количеству элементов словаря
-    2.1 Для каждого ключа найти соотношение гласнных букв к согласным, получить квадрат найденного значения
-    2.2 Подсчитать отклонение для текущего элемента по модулю (квадрат исходного текста - квадрат найденного значения)
-    Если отклонение меньше минимума, то присвоить новое значение минимума.
-
-*/
         if (Files.notExists(Path.of(Crypto.additionalFile))) {
             System.out.println("Передан не существующий файл дополнительный файл: " + Crypto.additionalFile);
             return;
@@ -326,27 +307,26 @@ public class Crypto {
         }
 
         double minDeviation = 10; //Double.MAX_VALUE думаю избыточно
+        //Получение
         double ishDeviation = Crypto.relationshipLetter(Crypto.additionalFile, 0);
         double curDeviation = Crypto.relationshipLetter(Crypto.getDestinationFile(), 0);
 
-        System.out.printf("ish = %f, cur = %f", ishDeviation, curDeviation);
+        System.out.printf("ish = %f, cur = %f\n", ishDeviation, curDeviation);
         double otkl = Math.abs(ishDeviation - curDeviation);
-        //System.out.println(otkl);
-
         int key = 0;
 
         for (int i = 0, j = 1; i < ALPHABET_LIST.size(); i++, j++) {
             double curDeviation2 = Crypto.relationshipLetter(Crypto.getDestinationFile(), j);
             double delta = Math.abs(curDeviation2 - otkl);
-            //if (Math.abs((ishDeviation*ishDeviation)-(curDeviation*curDeviation)) <= 0.25)
-            if (delta < 0.15)
-                System.out.printf("j=%d, delta=%f\n", j, delta);
-            //System.out.printf("key =%d, ishD=%f currentD= %f, delta=%f \n", j, ishDeviation, curDeviation, Math.abs((ishDeviation*ishDeviation)-(curDeviation*curDeviation)));
+            if (minDeviation>delta) {
+                minDeviation = delta;
+                key = j;
+            }
+
+
         }
-        System.out.println(key);
-
-
+        System.out.println("Вероятный ключ: " + key);
+        //System.out.printf("j=%d, delta=%f\n", j, delta);
+        Crypto.cryptText(-key, Crypto.getDestinationFile(), Crypto.getSourceFile());
     }
-
-
 }
