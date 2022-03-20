@@ -13,6 +13,10 @@ public class Crypto {
     //public final static String DESTINATION_FILE = "c:/test/destination.txt";
     private final static String DESTINATION_FILE = "/home/bulat/test/destination.txt";
 
+    private final static String ADDITIONAL_FILE = "/home/bulat/test/destination.txt";
+
+
+
     public static void setDestinationFile(String destinationFile) {
         Crypto.destinationFile = destinationFile;
     }
@@ -50,6 +54,16 @@ public class Crypto {
     private static String sourceFile = SOURCE_FILE;
     private static String destinationFile = DESTINATION_FILE;
 
+    public static String getAdditionalFile() {
+        return additionalFile;
+    }
+
+    public static void setAdditionalFile(String additionalFile) {
+        Crypto.additionalFile = additionalFile;
+    }
+
+    private static String additionalFile = DESTINATION_FILE;
+
 
     private static final List<Character> ALPHABET_LIST = Arrays.asList('а', 'б', 'в',
             'г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у',
@@ -57,8 +71,7 @@ public class Crypto {
             ':', '!', '?', ' ');
 
     private static final char[] GLASN_BUKV = {'а', 'у', 'о', 'ы', 'э', 'я', 'ю', 'ё', 'и', 'е'};
-    private static final char[] SOGL_BUKV = {'б', 'в', 'г', 'д', 'ж','з','й','к','л','м','н','п','р','с','т','ф','х','ц','ч','ш','щ'};
-
+    private static final char[] SOGL_BUKV = {'б', 'в', 'г', 'д', 'ж', 'з', 'й', 'к', 'л', 'м', 'н', 'п', 'р', 'с', 'т', 'ф', 'х', 'ц', 'ч', 'ш', 'щ'};
 
 
     private static final List<Character> PUNCTUATION_MARK = Arrays.asList('.', ',', '?', ':', ';', '-');
@@ -86,6 +99,8 @@ public class Crypto {
         }
         //}
     }
+
+
 
     public static void setDestinationFileFromMenu() {
         //try
@@ -236,17 +251,26 @@ public class Crypto {
         //5. Выбрать из Map по максимальному значению ключ, расшифровать текст. Записать в файл
     }
 
-    public static void staticAnaliz() {
-        String filename = "/home/bulat/test/add.txt";
-        String line;
-        int cntGl = 0;
-        int cntSogl = 0;
-        try (BufferedReader bufferedReader = Files.newBufferedReader(Path.of(filename), Charset.defaultCharset())) {
-            //bufferedReader.mark(1);
+    private static double relationshipLetter (String file, int offset) {
+        if (Files.notExists(Path.of(file))) {
+            System.out.println("Файл не существует " + file);
+            return 0;
+        }
+        try (BufferedReader bufferedReader = Files.newBufferedReader(Path.of(file), Charset.defaultCharset())) {
+            int cntGl = 0;
+            int cntSogl = 0;
+            String line;
             while ((line = bufferedReader.readLine()) != null) {
-                char[] arr = line.toLowerCase().toCharArray();
+                String newLine2;
+                if (offset!=0) {
+                    newLine2 = enCryptLine(line, -offset);
+                } else {
+                    newLine2 = line;
+                }
+                char[] arr = newLine2.toLowerCase().toCharArray();
+
                 for (int i = 0; i < arr.length; i++) {
-                    for (int k = 0; k < SOGL_BUKV.length ; k++) {
+                    for (int k = 0; k < SOGL_BUKV.length; k++) {
                         if (arr[i] == SOGL_BUKV[k]) {
                             cntSogl++;
                             break;
@@ -261,11 +285,55 @@ public class Crypto {
                     }
                 }
             }
+            float t = (float) cntGl / cntSogl;
+            return t*t;
+            //return (float) cntGl / cntSogl;
 
-            System.out.printf ("Количество гласных букв: %d, количество согласных букв: %d, соотношение гласных и согласных: %f \n", cntGl, cntSogl, (float) cntGl/cntSogl);
+            //System.out.printf("Ключ %d, количество гласных букв: %d, количество согласных букв: %d, соотношение гласных и согласных: %f \n", m, cntGl, cntSogl, (float) cntGl / cntSogl);
         } catch (IOException e) {
             e.printStackTrace();
         }
+        catch (InvalidKeyCrypt invalidKeyCrypt) {
+            invalidKeyCrypt.printStackTrace();
+        }
+
+        return Float.MAX_VALUE;
+    }
+
+    public static void staticAnaliz() {
+
+/*
+    1.Из не зашифрованного текста того же автора получить соотношение гласных и согласных букв
+    2.Получить квадрат этого отношения
+    3. отклонением назначить Float.Max
+    2.В цикле по количеству элементов словаря
+    2.1 Для каждого ключа найти соотношение гласнных букв к согласным, получить квадрат найденного значения
+    2.2 Подсчитать отклонение для текущего элемента по модулю (квадрат исходного текста - квадрат найденного значения)
+    Если отклонение меньше минимума, то присвоить новое значение минимума.
+
+*/
+        String filename = "/home/bulat/test/add.txt";
+        String filename2 = Crypto.getDestinationFile();
+
+        double minDeviation = 10; //Double.MAX_VALUE думаю избыточно
+        double ishDeviation = Crypto.relationshipLetter(filename,0);
+        double curDeviation = Crypto.relationshipLetter(filename2,0);
+
+        System.out.printf("ish = %f, cur = %f", ishDeviation, curDeviation);
+        double otkl = Math.abs(ishDeviation-curDeviation);
+        //System.out.println(otkl);
+
+        int key=0;
+
+        for (int i = 0, j=1; i < ALPHABET_LIST.size(); i++, j++) {
+            double curDeviation2 = Crypto.relationshipLetter(filename2,j);
+            double delta = Math.abs(curDeviation2-otkl);
+            //if (Math.abs((ishDeviation*ishDeviation)-(curDeviation*curDeviation)) <= 0.25)
+            if (delta<0.15)
+            System.out.printf("j=%d, delta=%f\n", j, delta);
+            //System.out.printf("key =%d, ishD=%f currentD= %f, delta=%f \n", j, ishDeviation, curDeviation, Math.abs((ishDeviation*ishDeviation)-(curDeviation*curDeviation)));
+        }
+        System.out.println(key);
 
 
     }

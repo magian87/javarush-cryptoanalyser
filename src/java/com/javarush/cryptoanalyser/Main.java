@@ -30,12 +30,13 @@ public class Main {
             System.out.println("1 посмотреть пути к файлам для шифрования\\расшифровки\\криптографический ключ");
             System.out.println("2 Задать файл для шифрования");
             System.out.println("3 Задать файл для расшифровки");
-            System.out.println("4 Задать криптографический ключ");
-            System.out.println("5 Зашифровать по ключу");
-            System.out.println("6 Расшифровать по ключу");
-            System.out.println("7 Взлом (Brute Force)");
-            System.out.println("8 Взлом (Статистический анализ)");
-            System.out.println("9 Выход");
+            System.out.println("4 Задать дополнительный файл");
+            System.out.println("5 Задать криптографический ключ");
+            System.out.println("6 Зашифровать по ключу");
+            System.out.println("7 Расшифровать по ключу");
+            System.out.println("8 Взлом (Brute Force)");
+            System.out.println("9 Взлом (Статистический анализ)");
+            System.out.println("10 Выход");
 
             System.out.print("Введите пункт меню: ");
             try {
@@ -57,18 +58,20 @@ public class Main {
                             Crypto.setDestinationFileFromMenu();
                             break;
                         case 4:
-                            Crypto.setKeyFromMenu();
                             break;
                         case 5:
-                            Crypto.cryptText(Crypto.getKey(), Crypto.getSourceFile(), Crypto.getDestinationFile());
+                            Crypto.setKeyFromMenu();
                             break;
                         case 6:
-                            Crypto.cryptText(-Crypto.getKey(), Crypto.getDestinationFile(), Crypto.getSourceFile() );
+                            Crypto.cryptText(Crypto.getKey(), Crypto.getSourceFile(), Crypto.getDestinationFile());
                             break;
                         case 7:
-                            Crypto.BruteForce(Crypto.getDestinationFile());
+                            Crypto.cryptText(-Crypto.getKey(), Crypto.getDestinationFile(), Crypto.getSourceFile() );
                             break;
                         case 8:
+                            Crypto.BruteForce(Crypto.getDestinationFile());
+                            break;
+                        case 9:
                             Crypto.staticAnaliz();
                             break;
                     }
@@ -79,7 +82,7 @@ public class Main {
             }
 
 
-        } while (n != 9);
+        } while (n != 10);
     }
 
 }
