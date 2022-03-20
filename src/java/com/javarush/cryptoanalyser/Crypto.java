@@ -13,7 +13,7 @@ public class Crypto {
     //public final static String DESTINATION_FILE = "c:/test/destination.txt";
     private final static String DESTINATION_FILE = "/home/bulat/test/destination.txt";
 
-    private final static String ADDITIONAL_FILE = "/home/bulat/test/destination.txt";
+    private final static String ADDITIONAL_FILE = "/home/bulat/test/add.txt";
 
 
 
@@ -62,7 +62,7 @@ public class Crypto {
         Crypto.additionalFile = additionalFile;
     }
 
-    private static String additionalFile = DESTINATION_FILE;
+    private static String additionalFile = ADDITIONAL_FILE;
 
 
     private static final List<Character> ALPHABET_LIST = Arrays.asList('а', 'б', 'в',
@@ -84,6 +84,7 @@ public class Crypto {
         System.out.println("ПАРАМЕТРЫ");
         System.out.println("Файл для Шифрования: " + sourceFile);
         System.out.println("Файл для расшифровки: " + destinationFile);
+        System.out.println("Дополнительный файл: " + additionalFile);
         System.out.println("Криптографический ключ: " + getKey());
     }
 
@@ -100,6 +101,18 @@ public class Crypto {
         //}
     }
 
+    public static void setAdditionFileFromMenu() {
+        //try
+        Scanner scanner1 = new Scanner(System.in);//{
+        System.out.print("Введите дополнительный файл этого же автора: ");
+        String filename = scanner1.nextLine();
+        if (Files.notExists(Path.of(filename))) {
+            System.out.println("Введен не существующий файл");
+        } else {
+            Crypto.setAdditionalFile(filename);
+        }
+        //}
+    }
 
 
     public static void setDestinationFileFromMenu() {
@@ -166,6 +179,16 @@ public class Crypto {
     }
 
     public static void cryptText(int p_key, String p_source_file, String p_distination_file) {
+        if (Files.notExists(Path.of(p_source_file))) {
+            System.out.println("Исходный файл не существует: " + p_source_file);
+            return;
+        }
+        if (Files.notExists(Path.of(p_distination_file))) {
+            System.out.println("Результирующий файл не существует: " + p_source_file);
+            return;
+        }
+
+
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(p_source_file));
              BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(p_distination_file))
         ) {
@@ -187,6 +210,10 @@ public class Crypto {
     }
 
     public static void BruteForce(String p_filename) {
+        if (Files.notExists(Path.of(p_filename))) {
+            System.out.println("Передан не существующий файл для расшифровки: " + p_filename);
+            return;
+        }
         String line;
         Set<String> wordSet = new HashSet<>();
         Map<Integer, Integer> mapKey = new HashMap<>();
@@ -290,11 +317,12 @@ public class Crypto {
             //return (float) cntGl / cntSogl;
 
             //System.out.printf("Ключ %d, количество гласных букв: %d, количество согласных букв: %d, соотношение гласных и согласных: %f \n", m, cntGl, cntSogl, (float) cntGl / cntSogl);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         catch (InvalidKeyCrypt invalidKeyCrypt) {
             invalidKeyCrypt.printStackTrace();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
         }
 
         return Float.MAX_VALUE;
@@ -312,12 +340,18 @@ public class Crypto {
     Если отклонение меньше минимума, то присвоить новое значение минимума.
 
 */
-        String filename = "/home/bulat/test/add.txt";
-        String filename2 = Crypto.getDestinationFile();
+        if (Files.notExists(Path.of(Crypto.additionalFile))) {
+            System.out.println("Передан не существующий файл дополнительный файл: " + Crypto.additionalFile);
+            return;
+        }
+        if (Files.notExists(Path.of(Crypto.getDestinationFile()))) {
+            System.out.println("Передан не существующий файл для расшифровки: " + Crypto.getDestinationFile());
+            return;
+        }
 
         double minDeviation = 10; //Double.MAX_VALUE думаю избыточно
-        double ishDeviation = Crypto.relationshipLetter(filename,0);
-        double curDeviation = Crypto.relationshipLetter(filename2,0);
+        double ishDeviation = Crypto.relationshipLetter(Crypto.additionalFile,0);
+        double curDeviation = Crypto.relationshipLetter(Crypto.getDestinationFile(),0);
 
         System.out.printf("ish = %f, cur = %f", ishDeviation, curDeviation);
         double otkl = Math.abs(ishDeviation-curDeviation);
@@ -326,7 +360,7 @@ public class Crypto {
         int key=0;
 
         for (int i = 0, j=1; i < ALPHABET_LIST.size(); i++, j++) {
-            double curDeviation2 = Crypto.relationshipLetter(filename2,j);
+            double curDeviation2 = Crypto.relationshipLetter(Crypto.getDestinationFile(),j);
             double delta = Math.abs(curDeviation2-otkl);
             //if (Math.abs((ishDeviation*ishDeviation)-(curDeviation*curDeviation)) <= 0.25)
             if (delta<0.15)

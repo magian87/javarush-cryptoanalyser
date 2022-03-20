@@ -13,16 +13,7 @@ public class Main {
 
 
     public static void main(String[] args) {
-   /*     String ss = ",";
-        //String ss = "aaa";
-        System.out.println(ss.matches(".*[,-].*"));
-        //System.out.println(ss.replaceAll("[.,!?:;«»]$",""));
-        System.exit(-1);*/
-
-        //String str;
-
         Crypto.setKey(15);
-
 
         Scanner scanner = new Scanner(System.in);
         int n =0;
@@ -44,7 +35,7 @@ public class Main {
                 n = Integer.parseInt(str);
                 System.out.println();
 
-                if (!(1 <= n || n <= 9)) {
+                if (!(1 <= n && n <= 10)) {
                     System.out.println(NOT_TRUTH_NUMBER_MENU);
                 } else {
                     switch (n) {
@@ -58,6 +49,7 @@ public class Main {
                             Crypto.setDestinationFileFromMenu();
                             break;
                         case 4:
+                            Crypto.setAdditionFileFromMenu();
                             break;
                         case 5:
                             Crypto.setKeyFromMenu();
