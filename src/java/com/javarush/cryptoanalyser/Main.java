@@ -43,13 +43,15 @@ public class Main {
                             Crypto.showParams();
                             break;
                         case 2:
-                            Crypto.setSourceFileFromMenu();
+                            Crypto.setFileFromMenu(Crypto.TypeFilesEnum.source);
+                            //Crypto.typeFiles.put("d","dd");
+                            //Он Map же final, почему можно добавлять элементы?
                             break;
                         case 3:
-                            Crypto.setDestinationFileFromMenu();
+                            Crypto.setFileFromMenu(Crypto.TypeFilesEnum.destination);
                             break;
                         case 4:
-                            Crypto.setAdditionFileFromMenu();
+                            Crypto.setFileFromMenu(Crypto.TypeFilesEnum.addition);
                             break;
                         case 5:
                             Crypto.setKeyFromMenu();

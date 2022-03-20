@@ -8,25 +8,33 @@ import java.util.*;
 
 public class Crypto {
 
-    //public final static String SOURCE_FILE = "c:/test/source.txt";
     private final static String SOURCE_FILE = "/home/bulat/test/source.txt";
-    //public final static String DESTINATION_FILE = "c:/test/destination.txt";
     private final static String DESTINATION_FILE = "/home/bulat/test/destination.txt";
-
     private final static String ADDITIONAL_FILE = "/home/bulat/test/add.txt";
 
+    private static final List<Character> ALPHABET_LIST = Arrays.asList('а', 'б', 'в',
+            'г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у',
+            'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'я', '.', ',', '«', '»',
+            ':', '!', '?', ' ');
 
+    private static final char[] LOWEL_LETTERS = {'а', 'у', 'о', 'ы', 'э', 'я', 'ю', 'ё', 'и', 'е'};
+    private static final char[] CONSONANT_LETTERS = {'б', 'в', 'г', 'д', 'ж', 'з', 'й', 'к', 'л', 'м', 'н', 'п', 'р', 'с', 'т', 'ф', 'х', 'ц', 'ч', 'ш', 'щ'};
 
-    public static void setDestinationFile(String destinationFile) {
-        Crypto.destinationFile = destinationFile;
+    private static int key;
+    private static String sourceFile = SOURCE_FILE;
+    private static String destinationFile = DESTINATION_FILE;
+    private static String additionalFile = ADDITIONAL_FILE;
+
+    public enum TypeFilesEnum {
+        source, destination, addition
     }
 
-    static class InvalidKeyCrypt extends Exception {
+    public static final Map<String, String> typeFilesMap = new HashMap<>();
 
-    }
-
-    static class NumberFormatExceptionCrypt extends Exception {
-
+    static {
+        typeFilesMap.put(TypeFilesEnum.source.toString() , "файл для шифрования");
+        typeFilesMap.put(TypeFilesEnum.destination.toString(), "файл для расшифровки");
+        typeFilesMap.put(TypeFilesEnum.addition.toString(), "дополнительный файл");
     }
 
     public static int getKey() {
@@ -37,22 +45,21 @@ public class Crypto {
         Crypto.key = key;
     }
 
-    public static void setSourceFile(String sourceFile) {
-        Crypto.sourceFile = sourceFile;
-    }
-
-    private static int key;
-
     public static String getSourceFile() {
         return sourceFile;
+    }
+
+    public static void setSourceFile(String sourceFile) {
+        Crypto.sourceFile = sourceFile;
     }
 
     public static String getDestinationFile() {
         return destinationFile;
     }
 
-    private static String sourceFile = SOURCE_FILE;
-    private static String destinationFile = DESTINATION_FILE;
+    public static void setDestinationFile(String destinationFile) {
+        Crypto.destinationFile = destinationFile;
+    }
 
     public static String getAdditionalFile() {
         return additionalFile;
@@ -62,22 +69,11 @@ public class Crypto {
         Crypto.additionalFile = additionalFile;
     }
 
-    private static String additionalFile = ADDITIONAL_FILE;
 
+    static class InvalidKeyCrypt extends Exception {
 
-    private static final List<Character> ALPHABET_LIST = Arrays.asList('а', 'б', 'в',
-            'г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у',
-            'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'я', '.', ',', '«', '»',
-            ':', '!', '?', ' ');
+    }
 
-    private static final char[] GLASN_BUKV = {'а', 'у', 'о', 'ы', 'э', 'я', 'ю', 'ё', 'и', 'е'};
-    private static final char[] SOGL_BUKV = {'б', 'в', 'г', 'д', 'ж', 'з', 'й', 'к', 'л', 'м', 'н', 'п', 'р', 'с', 'т', 'ф', 'х', 'ц', 'ч', 'ш', 'щ'};
-
-
-    private static final List<Character> PUNCTUATION_MARK = Arrays.asList('.', ',', '?', ':', ';', '-');
-
-    private static final List<String> ACTUAL_WORDS = Arrays.asList("и", "в", "не", "на", "я", "быть", "с", "он", "что", "а", "этот",
-            "это", "по", "к", "но", "они", "мы", "она", "как", "то", "и", "у", "в", "за", "от", "так", "или");
 
     //Отображение текцщих параметров шифрования-дешифрования
     public static void showParams() {
@@ -88,56 +84,38 @@ public class Crypto {
         System.out.println("Криптографический ключ: " + getKey());
     }
 
-    public static void setSourceFileFromMenu() {
+    public static void setFileFromMenu(TypeFilesEnum typeFilesEnum) {
+        //
+        //        Почему нельзя использовать try -with-resources, появляются ошибки, как будто закрывается
+        //        основной Scanner из модуля Main. Вот StackTrace. Что делать и как исправить?
+        //        Exception in thread "main" java.util.NoSuchElementException
+        //        at java.base/java.util.Scanner.throwFor(Scanner.java:937)
+        //        at java.base/java.util.Scanner.next(Scanner.java:1594)
+        //        at java.base/java.util.Scanner.nextInt(Scanner.java:2258)
+        //        at java.base/java.util.Scanner.nextInt(Scanner.java:2212)
+        //        at com.javarush.cryptoanalyser.Main.main(Main.java:41)
         //try
         Scanner scanner1 = new Scanner(System.in);//{
-        System.out.print("Введите файл для шифрования: ");
+        String value = typeFilesMap.get(typeFilesEnum.toString());
+        System.out.print("Введите "+value+ ": ");
         String filename = scanner1.nextLine();
         if (Files.notExists(Path.of(filename))) {
             System.out.println("Введен не существующий файл");
         } else {
+            if (typeFilesEnum.toString().equalsIgnoreCase("source")){
+                Crypto.setSourceFile(filename);
+            } else if (typeFilesEnum.toString().equalsIgnoreCase("distinatiion")) {
+                Crypto.setDestinationFile(filename);
+            } else if (typeFilesEnum.toString().equalsIgnoreCase("addition")) {
+                Crypto.setAdditionalFile(filename);
+            }
             Crypto.setSourceFile(filename);
         }
         //}
-    }
 
-    public static void setAdditionFileFromMenu() {
-        //try
-        Scanner scanner1 = new Scanner(System.in);//{
-        System.out.print("Введите дополнительный файл этого же автора: ");
-        String filename = scanner1.nextLine();
-        if (Files.notExists(Path.of(filename))) {
-            System.out.println("Введен не существующий файл");
-        } else {
-            Crypto.setAdditionalFile(filename);
-        }
-        //}
-    }
-
-
-    public static void setDestinationFileFromMenu() {
-        //try
-        Scanner scanner1 = new Scanner(System.in);//{
-        System.out.print("Введите файл для расшифровки: ");
-        String filename = scanner1.nextLine();
-        if (Files.notExists(Path.of(filename))) {
-            System.out.println("Введен не существующий файл");
-        } else {
-            Crypto.setDestinationFile(filename);
-        }
-        //}
     }
 
     public static void setKeyFromMenu() {
-//        Почему в процедурах setSourceFileFromMenu, setDestinationFileFromMenu,setKeyFromMenu
-//        нельзя использовать try -with-resources, появляются ошибки, как будто закрывается
-//        основной Scanner из модуля Main. Вот StackTrace. Что делать и как исправить?
-//        Exception in thread "main" java.util.NoSuchElementException
-//        at java.base/java.util.Scanner.throwFor(Scanner.java:937)
-//        at java.base/java.util.Scanner.next(Scanner.java:1594)
-//        at java.base/java.util.Scanner.nextInt(Scanner.java:2258)
-//        at java.base/java.util.Scanner.nextInt(Scanner.java:2212)
-//        at com.javarush.cryptoanalyser.Main.main(Main.java:41)
         //try (
         Scanner scanner1 = new Scanner(System.in);//) {
         System.out.print("Введите криптографический ключ: ");
@@ -278,7 +256,7 @@ public class Crypto {
         //5. Выбрать из Map по максимальному значению ключ, расшифровать текст. Записать в файл
     }
 
-    private static double relationshipLetter (String file, int offset) {
+    private static double relationshipLetter(String file, int offset) {
         if (Files.notExists(Path.of(file))) {
             System.out.println("Файл не существует " + file);
             return 0;
@@ -289,7 +267,7 @@ public class Crypto {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 String newLine2;
-                if (offset!=0) {
+                if (offset != 0) {
                     newLine2 = enCryptLine(line, -offset);
                 } else {
                     newLine2 = line;
@@ -297,15 +275,15 @@ public class Crypto {
                 char[] arr = newLine2.toLowerCase().toCharArray();
 
                 for (int i = 0; i < arr.length; i++) {
-                    for (int k = 0; k < SOGL_BUKV.length; k++) {
-                        if (arr[i] == SOGL_BUKV[k]) {
+                    for (int k = 0; k < CONSONANT_LETTERS.length; k++) {
+                        if (arr[i] == CONSONANT_LETTERS[k]) {
                             cntSogl++;
                             break;
                         }
                     }
 
-                    for (int j = 0; j < GLASN_BUKV.length; j++) {
-                        if (arr[i] == GLASN_BUKV[j]) {
+                    for (int j = 0; j < LOWEL_LETTERS.length; j++) {
+                        if (arr[i] == LOWEL_LETTERS[j]) {
                             cntGl++;
                             break;
                         }
@@ -313,15 +291,13 @@ public class Crypto {
                 }
             }
             float t = (float) cntGl / cntSogl;
-            return t*t;
+            return t * t;
             //return (float) cntGl / cntSogl;
 
             //System.out.printf("Ключ %d, количество гласных букв: %d, количество согласных букв: %d, соотношение гласных и согласных: %f \n", m, cntGl, cntSogl, (float) cntGl / cntSogl);
-        }
-        catch (InvalidKeyCrypt invalidKeyCrypt) {
+        } catch (InvalidKeyCrypt invalidKeyCrypt) {
             invalidKeyCrypt.printStackTrace();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -350,21 +326,21 @@ public class Crypto {
         }
 
         double minDeviation = 10; //Double.MAX_VALUE думаю избыточно
-        double ishDeviation = Crypto.relationshipLetter(Crypto.additionalFile,0);
-        double curDeviation = Crypto.relationshipLetter(Crypto.getDestinationFile(),0);
+        double ishDeviation = Crypto.relationshipLetter(Crypto.additionalFile, 0);
+        double curDeviation = Crypto.relationshipLetter(Crypto.getDestinationFile(), 0);
 
         System.out.printf("ish = %f, cur = %f", ishDeviation, curDeviation);
-        double otkl = Math.abs(ishDeviation-curDeviation);
+        double otkl = Math.abs(ishDeviation - curDeviation);
         //System.out.println(otkl);
 
-        int key=0;
+        int key = 0;
 
-        for (int i = 0, j=1; i < ALPHABET_LIST.size(); i++, j++) {
-            double curDeviation2 = Crypto.relationshipLetter(Crypto.getDestinationFile(),j);
-            double delta = Math.abs(curDeviation2-otkl);
+        for (int i = 0, j = 1; i < ALPHABET_LIST.size(); i++, j++) {
+            double curDeviation2 = Crypto.relationshipLetter(Crypto.getDestinationFile(), j);
+            double delta = Math.abs(curDeviation2 - otkl);
             //if (Math.abs((ishDeviation*ishDeviation)-(curDeviation*curDeviation)) <= 0.25)
-            if (delta<0.15)
-            System.out.printf("j=%d, delta=%f\n", j, delta);
+            if (delta < 0.15)
+                System.out.printf("j=%d, delta=%f\n", j, delta);
             //System.out.printf("key =%d, ishD=%f currentD= %f, delta=%f \n", j, ishDeviation, curDeviation, Math.abs((ishDeviation*ishDeviation)-(curDeviation*curDeviation)));
         }
         System.out.println(key);
